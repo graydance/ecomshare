@@ -30,6 +30,7 @@ public class EcomsharePlugin implements FlutterPlugin, MethodCallHandler {
   public static final String CHANNEL_FACEBOOK_GROUP = "facebook group";
   public static final String CHANNEL_FACEBOOK_PAGE = "facebook page";
   public static final String CHANNEL_FACEBOOK_MARKET_PLACE = "facebook market place";
+  public static final String CHANNEL_TWITTER = "twitter";
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -41,6 +42,7 @@ public class EcomsharePlugin implements FlutterPlugin, MethodCallHandler {
   public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
     if (call.method.equals("getSupportedChannels")) {
       final List<String> list = new ArrayList<>();
+      // TODO
       if (call.arguments.equals(MEDIA_TYPE_IMAGE)) {
         list.add(CHANNEL_FACEBOOK_MARKET_PLACE);
       }
@@ -48,11 +50,13 @@ public class EcomsharePlugin implements FlutterPlugin, MethodCallHandler {
       list.add(CHANNEL_FACEBOOK);
       list.add(CHANNEL_FACEBOOK_GROUP);
       list.add(CHANNEL_FACEBOOK_PAGE);
+      list.add(CHANNEL_TWITTER);
       result.success(list);
     } else if (call.method.equals("shareTo")){
       String mediaType = call.argument("mediaType");
       String channel = call.argument("channel");
       String content = call.argument("content");
+      // TODO
       result.error("TODO", String.format("%s-%s", mediaType, channel), content);
     } else {
       result.notImplemented();

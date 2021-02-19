@@ -11,6 +11,7 @@ class Ecomshare {
   static const CHANNEL_FACEBOOK_GROUP = 'facebook group';
   static const CHANNEL_FACEBOOK_PAGE = 'facebook page';
   static const CHANNEL_FACEBOOK_MARKET_PLACE = 'facebook market place';
+  static const CHANNEL_TWITTER = 'twitter';
 
   static const MethodChannel _channel = const MethodChannel('ecomshare');
 
