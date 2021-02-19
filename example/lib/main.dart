@@ -18,6 +18,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   List<String> _supportedChannels = [];
+  String error = '';
 
   @override
   void initState() {
@@ -55,23 +56,28 @@ class _MyAppState extends State<MyApp> {
         ),
         body: Center(
           child: Column(
-            children: _supportedChannels
-                .map((channel) => RaisedButton(
-                      onPressed: () async {
-                        try {
-                          File file = await ImagePicker.pickImage(
-                              source: ImageSource.gallery);
-                          await Ecomshare.shareTo(
-                              Ecomshare.MEDIA_TYPE_IMAGE, channel, file.path);
-                        } on PlatformException catch (err) {
-                          print(err);
-                        } catch (ex) {
-                          print(ex);
-                        }
-                      },
-                      child: Text(channel),
-                    ))
-                .toList(),
+            children: [
+              ..._supportedChannels
+                  .map((channel) => RaisedButton(
+                        onPressed: () async {
+                          try {
+                            File file = await ImagePicker.pickImage(
+                                source: ImageSource.gallery);
+                            await Ecomshare.shareTo(
+                                Ecomshare.MEDIA_TYPE_IMAGE, channel, file.path);
+                          } on PlatformException catch (err) {
+                            setState(() {
+                              error = err.message + ":" + err.details;
+                            });
+                          } catch (ex) {
+                            print(ex);
+                          }
+                        },
+                        child: Text(channel),
+                      ))
+                  .toList(),
+              Text(error)
+            ],
           ),
         ),
       ),
