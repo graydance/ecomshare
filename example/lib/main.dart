@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:ecomshare/ecomshare.dart';
+import 'package:image_picker/image_picker.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,7 +17,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
+  List<String> _supportedChannels = [];
 
   @override
   void initState() {
@@ -24,12 +27,13 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    String platformVersion;
+    List<String> platformVersion;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
-      platformVersion = await Ecomshare.platformVersion;
+      platformVersion =
+          await Ecomshare.getSupportedChannels(Ecomshare.MEDIA_TYPE_IMAGE);
     } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
+      platformVersion = [];
     }
 
     // If the widget was removed from the tree while the asynchronous platform
@@ -38,7 +42,7 @@ class _MyAppState extends State<MyApp> {
     if (!mounted) return;
 
     setState(() {
-      _platformVersion = platformVersion;
+      _supportedChannels = platformVersion;
     });
   }
 
@@ -47,10 +51,28 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('ecomshare example app'),
         ),
         body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+          child: Column(
+            children: _supportedChannels
+                .map((channel) => RaisedButton(
+                      onPressed: () async {
+                        try {
+                          File file = await ImagePicker.pickImage(
+                              source: ImageSource.gallery);
+                          await Ecomshare.shareTo(
+                              Ecomshare.MEDIA_TYPE_IMAGE, channel, file.path);
+                        } on PlatformException catch (err) {
+                          print(err);
+                        } catch (ex) {
+                          print(ex);
+                        }
+                      },
+                      child: Text(channel),
+                    ))
+                .toList(),
+          ),
         ),
       ),
     );

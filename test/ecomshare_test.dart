@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ecomshare/ecomshare.dart';
 
 void main() {
   const MethodChannel channel = MethodChannel('ecomshare');
@@ -17,7 +16,5 @@ void main() {
     channel.setMockMethodCallHandler(null);
   });
 
-  test('getPlatformVersion', () async {
-    expect(await Ecomshare.platformVersion, '42');
-  });
+  test('getPlatformVersion', () async {});
 }
