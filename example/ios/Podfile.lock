@@ -1,6 +1,18 @@
 PODS:
   - ecomshare (0.0.1):
+    - FBSDKCoreKit
+    - FBSDKShareKit
     - Flutter
+  - FBSDKCoreKit (8.2.0):
+    - FBSDKCoreKit/Basics (= 8.2.0)
+    - FBSDKCoreKit/Core (= 8.2.0)
+  - FBSDKCoreKit/Basics (8.2.0)
+  - FBSDKCoreKit/Core (8.2.0):
+    - FBSDKCoreKit/Basics
+  - FBSDKShareKit (8.2.0):
+    - FBSDKShareKit/Share (= 8.2.0)
+  - FBSDKShareKit/Share (8.2.0):
+    - FBSDKCoreKit (~> 8.2.0)
   - Flutter (1.0.0)
   - image_picker (0.0.1):
     - Flutter
@@ -13,6 +25,11 @@ DEPENDENCIES:
   - image_picker (from `.symlinks/plugins/image_picker/ios`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
 
+SPEC REPOS:
+  trunk:
+    - FBSDKCoreKit
+    - FBSDKShareKit
+
 EXTERNAL SOURCES:
   ecomshare:
     :path: ".symlinks/plugins/ecomshare/ios"
@@ -24,7 +41,9 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/integration_test/ios"
 
 SPEC CHECKSUMS:
-  ecomshare: 08e8aeb49363b4023905e0f2b5abf0696121df92
+  ecomshare: 8c7b7f33cc62949a8367def56b953aae3cd3bca7
+  FBSDKCoreKit: 4afd6ff53d8133a433dbcda44451c9498f8c6ce4
+  FBSDKShareKit: 0c0d51b3af47075a85ed9bea0e28b2fc70e3594b
   Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
   image_picker: 9c3312491f862b28d21ecd8fdf0ee14e601b3f09
   integration_test: 6eb66a19f7104200dcfdd62bc0077e1b09686e4f
