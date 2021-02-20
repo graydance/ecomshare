@@ -12,6 +12,7 @@ public class SwiftEcomsharePlugin: NSObject, FlutterPlugin {
         case instagram
         case facebook
         case twitter
+        case system
         
         var isSupported: Bool {
             switch self {
@@ -21,6 +22,8 @@ public class SwiftEcomsharePlugin: NSObject, FlutterPlugin {
                 return canOpenFacebook()
             case .twitter:
                 return canOpenTwitter()
+            case .system:
+                return true
             }
         }
     }
@@ -59,6 +62,8 @@ public class SwiftEcomsharePlugin: NSObject, FlutterPlugin {
                 shareToFacebook(args: args, content: content, result: result)
             case .twitter:
                 shareToTwitter(text: content, result: result)
+            case .system:
+                shareBySystem(content: content, result: result)
             }
         }
     }
@@ -161,5 +166,16 @@ public class SwiftEcomsharePlugin: NSObject, FlutterPlugin {
             let url = URL(string: "https://twitter.com/intent/tweet?text=\(text)")!
             UIApplication.shared.openURL(url)
         }
+    }
+    
+    private func shareBySystem(content: String, result: @escaping FlutterResult) {
+        guard let controller = UIApplication.shared.windows.first?.rootViewController else {
+            result(false)
+            return
+        }
+        let url = URL(fileURLWithPath: content)
+        let activityViewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        controller.present(activityViewController, animated: true, completion: nil)
+        result(true)
     }
 }
