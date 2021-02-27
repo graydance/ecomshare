@@ -6,13 +6,10 @@ class Ecomshare {
   static const MEDIA_TYPE_IMAGE = 'image';
   static const MEDIA_TYPE_TEXT = 'text';
 
-  static const CHANNEL_INSTAGRAM = 'instagram';
-  static const CHANNEL_FACEBOOK = 'facebook';
-  static const CHANNEL_FACEBOOK_GROUP = 'facebook group';
-  static const CHANNEL_FACEBOOK_PAGE = 'facebook page';
-  static const CHANNEL_FACEBOOK_MARKET_PLACE = 'facebook market place';
-  static const CHANNEL_TWITTER = 'twitter';
-  static const CHANNEL_SYSTEM = 'system';
+  static const CHANNEL_INSTAGRAM = 'Instagram';
+  static const CHANNEL_FACEBOOK = 'Facebook';
+  static const CHANNEL_TWITTER = 'Twitter';
+  static const CHANNEL_SYSTEM = 'System';
 
   static const MethodChannel _channel = const MethodChannel('ecomshare');
 

@@ -1,12 +1,9 @@
 package fun.wqiang.ecomshare;
 
 import android.app.Activity;
-
 import androidx.annotation.NonNull;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -28,16 +25,13 @@ public class EcomsharePlugin implements FlutterPlugin, MethodCallHandler, Activi
     private static final String METHOD_GET_SUPPORTED_CHANNELS = "getSupportedChannels";
     private static final String METHOD_SHARE_TO = "shareTo";
 
-    public static final String MEDIA_TYPE_IMAGE = "image";
-    public static final String MEDIA_TYPE_TEXT = "text";
+    public static final String MEDIA_TYPE_IMAGE = "Image";
+    public static final String MEDIA_TYPE_TEXT = "Text";
 
-    public static final String CHANNEL_INSTAGRAM = "instagram";
-    public static final String CHANNEL_FACEBOOK = "facebook";
-    public static final String CHANNEL_FACEBOOK_GROUP = "facebook group";
-    public static final String CHANNEL_FACEBOOK_PAGE = "facebook page";
-    public static final String CHANNEL_FACEBOOK_MARKET_PLACE = "facebook market place";
-    public static final String CHANNEL_TWITTER = "twitter";
-    public static final String CHANNEL_SYSTEM = "system";
+    public static final String CHANNEL_INSTAGRAM = "Instagram";
+    public static final String CHANNEL_FACEBOOK = "Facebook";
+    public static final String CHANNEL_TWITTER = "Twitter";
+    public static final String CHANNEL_SYSTEM = "System";
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -49,11 +43,6 @@ public class EcomsharePlugin implements FlutterPlugin, MethodCallHandler, Activi
     public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
         if (METHOD_GET_SUPPORTED_CHANNELS.equals(call.method)) {
             final List<String> list = new ArrayList<>();
-//            if (call.arguments.equals(MEDIA_TYPE_IMAGE)) {
-//                list.add(CHANNEL_FACEBOOK_MARKET_PLACE);
-//            }
-//            list.add(CHANNEL_FACEBOOK_GROUP);
-//            list.add(CHANNEL_FACEBOOK_PAGE);
             list.add(CHANNEL_INSTAGRAM);
             list.add(CHANNEL_FACEBOOK);
             list.add(CHANNEL_TWITTER);
@@ -64,17 +53,13 @@ public class EcomsharePlugin implements FlutterPlugin, MethodCallHandler, Activi
             String channel = call.argument("channel");
             String content = call.argument("content");
             if (CHANNEL_FACEBOOK.equals(channel)) {
-                ShareManager.getInstance(activity).shareMedia2FacebookByIntent(content);
+                ShareManager.getInstance(activity).shareMedia2FacebookByIntent(mediaType, content);
             } else if (CHANNEL_TWITTER.equals(channel)) {
-                if (MEDIA_TYPE_TEXT.equals(mediaType)) {
-                    ShareManager.getInstance(activity).share2Twitter(content, "");
-                } else {
-                    ShareManager.getInstance(activity).share2Twitter("", content);
-                }
+                ShareManager.getInstance(activity).share2Twitter(mediaType, content);
             } else if (CHANNEL_INSTAGRAM.equals(channel)) {
-                ShareManager.getInstance(activity).share2Instagram(activity.getString(R.string.social_instagram), content);
+                ShareManager.getInstance(activity).share2Instagram(mediaType, content);
             } else if(CHANNEL_SYSTEM.equals(channel)){
-                ShareManager.getInstance(activity).shareBySystemShareComponent(null, content);
+                ShareManager.getInstance(activity).shareBySystemShareComponent(mediaType, content);
             }else {
                 result.error("-999", "Unknown channel", "Unknown channel, share failure");
             }

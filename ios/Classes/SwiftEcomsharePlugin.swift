@@ -9,20 +9,20 @@ public class SwiftEcomsharePlugin: NSObject, FlutterPlugin {
     }
     
     public enum Channel: String, CaseIterable {
-        case instagram
-        case facebook
-        case twitter
-        case system
+        case Instagram
+        case Facebook
+        case Twitter
+        case System
         
         var isSupported: Bool {
             switch self {
-            case .instagram:
+            case .Instagram:
                 return canOpenInstagram()
-            case .facebook:
+            case .Facebook:
                 return canOpenFacebook()
-            case .twitter:
+            case .Twitter:
                 return canOpenTwitter()
-            case .system:
+            case .System:
                 return true
             }
         }
@@ -56,13 +56,13 @@ public class SwiftEcomsharePlugin: NSObject, FlutterPlugin {
             }
             
             switch channel {
-            case .instagram:
+            case .Instagram:
                 shareToInstagram(imagePath: content, result: result)
-            case .facebook:
+            case .Facebook:
                 shareToFacebook(args: args, content: content, result: result)
-            case .twitter:
+            case .Twitter:
                 shareToTwitter(text: content, result: result)
-            case .system:
+            case .System:
                 shareBySystem(content: content, result: result)
             }
         }

@@ -16,7 +16,6 @@ import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.share.Sharer;
-import com.facebook.share.model.ShareContent;
 import com.facebook.share.model.ShareHashtag;
 import com.facebook.share.model.ShareLinkContent;
 import com.facebook.share.model.ShareMediaContent;
@@ -24,15 +23,13 @@ import com.facebook.share.model.SharePhoto;
 import com.facebook.share.model.ShareVideo;
 import com.facebook.share.widget.ShareDialog;
 import com.twitter.sdk.android.core.Twitter;
-import com.twitter.sdk.android.core.TwitterCore;
-import com.twitter.sdk.android.core.TwitterSession;
-import com.twitter.sdk.android.tweetcomposer.ComposerActivity;
 import com.twitter.sdk.android.tweetcomposer.TweetComposer;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Facebook Share SDK {@link "https://developers.facebook.com/docs/sharing/android/"}
@@ -98,26 +95,30 @@ public class ShareManager {
 
     /**
      * 推荐使用隐式Intent方式来调用Facebook分享，Facebook sdk原生分享会依赖网络且部分机型默认直接走onError回调无法分享。
-     * @param localMediaPaths 本地媒体资源路径
+     *
+     * @param content 文本内容/媒体资源本地路径
      */
-    public void shareMedia2FacebookByIntent(String... localMediaPaths){
-        Intent intent;
-        if (localMediaPaths != null && localMediaPaths.length == 1){
-            intent = new Intent(Intent.ACTION_SEND);
-            intent.putExtra(Intent.EXTRA_STREAM, parse2Uri(localMediaPaths[0]));
-        }else {
-            ArrayList<Uri> uris = new ArrayList<>(localMediaPaths.length);
-            intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-            for (int i = 0; i < localMediaPaths.length; i++) {
-                if (i >= 6) {
-                    // FB最大支持6个照片和视频元素内容
-                    break;
+    public void shareMedia2FacebookByIntent(String mediaType, String... content) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        if (EcomsharePlugin.MEDIA_TYPE_TEXT.equals(mediaType)) {
+            intent.putExtra(Intent.EXTRA_TEXT, content);
+        } else {
+            if (content != null && content.length == 1) {
+                intent.putExtra(Intent.EXTRA_STREAM, parse2Uri(content[0]));
+            } else {
+                ArrayList<Uri> uris = new ArrayList<>(content.length);
+                intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+                for (int i = 0; i < content.length; i++) {
+                    if (i >= 6) {
+                        // FB最大支持6个照片和视频元素内容
+                        break;
+                    }
+                    uris.add(parse2Uri(content[i]));
                 }
-                uris.add(parse2Uri(localMediaPaths[i]));
+                intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
             }
-            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
         }
-        intent.setType("video/;image/");
+        intent.setType(EcomsharePlugin.MEDIA_TYPE_TEXT.equals(mediaType) ? "text/plain" : "video/;image/");
         intent.setPackage("com.facebook.katana");
         mWRActivity.get().startActivity(Intent.createChooser(intent, "Share to Facebook"));
     }
@@ -176,6 +177,7 @@ public class ShareManager {
                         .setLocalUrl(parse2Uri(localMediaPath)).build();
                 mediaBuilder.addMedium(shareVideo);
             }
+
         }
         return mediaBuilder.build();
     }
@@ -227,16 +229,29 @@ public class ShareManager {
     /**
      * 分享到Twitter
      *
-     * @param content        Text desc
-     * @param localImagePath Local image url
-     * @param tags           # tags
+     * @param mediaType Text/Image
+     * @param content   Local image/video url
+     * @param tags      # tags
      */
-    public void share2Twitter(String content, String localImagePath, String... tags) {
+    public void share2Twitter(String mediaType, String content, String... tags) {
         Twitter.initialize(mApplicationContext);
-        if (TextUtils.isEmpty(localImagePath) || !isImageSource(localImagePath)) {
-            Toast.makeText(mWRActivity.get(), "Unsupported resource formats!", Toast.LENGTH_LONG).show();
-            return;
+        TweetComposer.Builder builder = new TweetComposer.Builder(mWRActivity.get());
+        if (EcomsharePlugin.MEDIA_TYPE_TEXT.equals(mediaType)) {
+            if (content.startsWith("http://") || content.startsWith("https://")) {
+                try {
+                    builder.url(new URL(content));
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                builder.text(content);
+            }
+        } else {
+            builder.image(parse2Uri(content));
         }
+        builder.show();
+        // 该分享必须结合Twitter登录，且session不能为空。
+        /*
         String[] newTags = null;
         if (tags != null && tags.length != 0) {
             newTags = new String[tags.length];
@@ -248,8 +263,7 @@ public class ShareManager {
                 }
             }
         }
-        // 该分享必须结合Twitter登录，且session不能为空。
-        /*final TwitterSession session = TwitterCore.getInstance().getSessionManager()
+        final TwitterSession session = TwitterCore.getInstance().getSessionManager()
                 .getActiveSession();
         final Intent intent = new ComposerActivity.Builder(mApplicationContext)
                 .session(session)
@@ -260,23 +274,15 @@ public class ShareManager {
                 .createIntent();
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mApplicationContext.getApplicationContext().startActivity(intent);*/
-
-        TweetComposer.Builder builder = new TweetComposer.Builder(mWRActivity.get());
-        builder.image(parse2Uri(localImagePath));
-        builder.text(content);
-        builder.show();
     }
 
     /**
      * 分享到Instagram动态
      * {@link "https://gist.github.com/michaeltys/a8613e5aea9db8e4684bf85568e40160"}
-     * @param localMediaPath 资源路径
+     *
+     * @param content 文本/本地资源路径
      */
-    public void share2Instagram(String title, String localMediaPath) {
-        if (!isInstagramSupportMediaFormat(localMediaPath)) {
-            Toast.makeText(mWRActivity.get(), "Unsupported resource formats!", Toast.LENGTH_LONG).show();
-            return;
-        }
+    public void share2Instagram(String mediaType, String content) {
         /*@MediaType String type;
         type = isVideoSource(localMediaPath) ? MediaType.VIDEO : MediaType.IMAGE;
         // Create the new Intent using the 'Send' action.
@@ -290,23 +296,32 @@ public class ShareManager {
         // Broadcast the Intent.
         mApplicationContext.startActivity(Intent.createChooser(share, title));*/
 
-        @MediaType String type;
-        type = isVideoSource(localMediaPath) ? MediaType.VIDEO : MediaType.IMAGE;
         Intent feedIntent = new Intent(Intent.ACTION_SEND);
-        feedIntent.setType(type);
-        feedIntent.putExtra(Intent.EXTRA_STREAM, parse2Uri(localMediaPath));
+        if (EcomsharePlugin.MEDIA_TYPE_TEXT.equals(mediaType)) {
+            feedIntent.setType("text/plain");
+            feedIntent.putExtra(Intent.ACTION_SEND, content);
+        } else {
+            @MediaType String type;
+            type = isVideoSource(content) ? MediaType.VIDEO : MediaType.IMAGE;
+            feedIntent.setType(type);
+            feedIntent.putExtra(Intent.EXTRA_STREAM, parse2Uri(content));
+        }
         feedIntent.setPackage("com.instagram.android");
 
         Intent storiesIntent = new Intent("com.instagram.share.ADD_TO_STORY");
-        storiesIntent.setDataAndType(parse2Uri(localMediaPath), isVideoSource(localMediaPath) ? "mp4" : "jpg");
+        if (EcomsharePlugin.MEDIA_TYPE_IMAGE.equals(mediaType)) {
+            storiesIntent.setDataAndType(parse2Uri(content), isVideoSource(content) ? "mp4" : "jpg");
+            mWRActivity.get().grantUriPermission(
+                    "com.instagram.android", parse2Uri(content), Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        } else {
+            storiesIntent.setType("text/plain");
+            storiesIntent.putExtra(Intent.EXTRA_TEXT, content);
+        }
         storiesIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         storiesIntent.setPackage("com.instagram.android");
-
-        mWRActivity.get().grantUriPermission(
-                "com.instagram.android", parse2Uri(localMediaPath), Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-        Intent chooserIntent = Intent.createChooser(feedIntent, title);
-        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {storiesIntent});
+        Intent chooserIntent = Intent.createChooser(feedIntent, "Share to");
+        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{storiesIntent});
+        chooserIntent.putExtra(Intent.EXTRA_TEXT, content);
         mWRActivity.get().startActivity(chooserIntent);
     }
 
@@ -330,20 +345,21 @@ public class ShareManager {
 
     /**
      * 调用系统分享
-     * @param content 分享文本内容
-     * @param mediaPath 分享媒体资源
+     *
+     * @param mediaType 分享文本内容
+     * @param content   分享媒体资源
      */
-    public void shareBySystemShareComponent(String content, String mediaPath) {
+    public void shareBySystemShareComponent(String mediaType, String content) {
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
-        Uri uri = parse2Uri(mediaPath);
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        if (!TextUtils.isEmpty(content)) {
-            shareIntent.putExtra(Intent.EXTRA_TEXT, content);
-        }
-        if (!TextUtils.isEmpty(mediaPath)) {
+        if (EcomsharePlugin.MEDIA_TYPE_IMAGE.equals(mediaType)) {
+            Uri uri = parse2Uri(content);
             shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
-            shareIntent.setType(isVideoSource(mediaPath) ? MediaType.VIDEO : MediaType.IMAGE);
+            shareIntent.setType(isVideoSource(content) ? MediaType.VIDEO : MediaType.IMAGE);
+        } else {
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(Intent.EXTRA_TEXT, content);
         }
         shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         try {
