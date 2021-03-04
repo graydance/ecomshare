@@ -45,23 +45,23 @@ public class SwiftEcomsharePlugin: NSObject, FlutterPlugin {
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        guard let method = FlutterMethod(rawValue: call.method),
-              let args = call.arguments as? [String: String] else {
+        guard let method = FlutterMethod(rawValue: call.method) else {
             result(FlutterMethodNotImplemented)
-            return
-        }
-        guard
-            let mediaType = MediaType(rawValue: args["mediaType"] ?? "") else {
-            result(FlutterError(code: "arguments is invalid", message: "arguments is invalid", details: "Facebook share require mediaType"))
             return
         }
         
         switch method {
         case .getSupportedChannels:
+            guard let args = call.arguments as? String,
+                  let mediaType = MediaType(rawValue: args) else {
+                result(FlutterError(code: "arguments is invalid", message: "arguments is invalid", details: call.arguments))
+                return
+            }
             result(Channel.allCases.filter { $0.isSupported(mediaType: mediaType) }.map { $0.rawValue })
         case .shareTo:
             guard let args = call.arguments as? [String: String],
                   let channel = Channel(rawValue: args["channel"] ?? ""),
+                  let mediaType = MediaType(rawValue: args["mediaType"] ?? ""),
                   let content = args["content"] else {
                 result(FlutterError(code: "arguments is invalid", message: "arguments is invalid", details: call.arguments))
                 return
@@ -112,10 +112,13 @@ public class SwiftEcomsharePlugin: NSObject, FlutterPlugin {
     }
     
     private func shareToFacebook(mediaType: MediaType, content: String, result: @escaping FlutterResult) {
-        let sharingContent: SharingContent = {
+        let sharingContent: SharingContent? = {
             switch mediaType {
             case .text:
-                let url = URL(fileURLWithPath: content)
+                guard let url = URL(string: content) else {
+                    result(false)
+                    return nil
+                }
                 let content = ShareLinkContent()
                 content.contentURL = url
                 return content
@@ -134,11 +137,15 @@ public class SwiftEcomsharePlugin: NSObject, FlutterPlugin {
             }
         }()
         
+        guard let theSharingContent = sharingContent else {
+            result(false)
+            return
+        }
         guard let controller = UIApplication.shared.windows.first?.rootViewController else {
             result(false)
             return
         }
-        let rst = ShareDialog(fromViewController: controller, content: sharingContent, delegate: nil).show()
+        let rst = ShareDialog(fromViewController: controller, content: theSharingContent, delegate: nil).show()
         result(rst)
     }
     
