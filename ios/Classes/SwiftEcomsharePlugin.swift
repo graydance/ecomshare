@@ -9,20 +9,26 @@ public class SwiftEcomsharePlugin: NSObject, FlutterPlugin {
     }
     
     public enum Channel: String, CaseIterable {
-        case Instagram
-        case Facebook
-        case Twitter
-        case System
+        case instagram = "Instagram"
+        case facebook = "Facebook"
+        case twitter = "Twitter"
+        case system = "System"
         
-        var isSupported: Bool {
+        func isSupported(mediaType: MediaType) -> Bool {
             switch self {
-            case .Instagram:
-                return canOpenInstagram()
-            case .Facebook:
+            case .instagram:
+                guard canOpenInstagram() else {
+                    return false
+                }
+                return [MediaType.image].contains(mediaType)
+            case .facebook:
                 return canOpenFacebook()
-            case .Twitter:
-                return canOpenTwitter()
-            case .System:
+            case .twitter:
+                guard canOpenTwitter() else {
+                    return false
+                }
+                return [MediaType.text].contains(mediaType)
+            case .system:
                 return true
             }
         }
@@ -39,14 +45,20 @@ public class SwiftEcomsharePlugin: NSObject, FlutterPlugin {
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        guard let method = FlutterMethod(rawValue: call.method) else {
+        guard let method = FlutterMethod(rawValue: call.method),
+              let args = call.arguments as? [String: String] else {
             result(FlutterMethodNotImplemented)
+            return
+        }
+        guard
+            let mediaType = MediaType(rawValue: args["mediaType"] ?? "") else {
+            result(FlutterError(code: "arguments is invalid", message: "arguments is invalid", details: "Facebook share require mediaType"))
             return
         }
         
         switch method {
         case .getSupportedChannels:
-            result(Channel.allCases.filter { $0.isSupported }.map { $0.rawValue })
+            result(Channel.allCases.filter { $0.isSupported(mediaType: mediaType) }.map { $0.rawValue })
         case .shareTo:
             guard let args = call.arguments as? [String: String],
                   let channel = Channel(rawValue: args["channel"] ?? ""),
@@ -56,13 +68,13 @@ public class SwiftEcomsharePlugin: NSObject, FlutterPlugin {
             }
             
             switch channel {
-            case .Instagram:
+            case .instagram:
                 shareToInstagram(imagePath: content, result: result)
-            case .Facebook:
-                shareToFacebook(args: args, content: content, result: result)
-            case .Twitter:
+            case .facebook:
+                shareToFacebook(mediaType: mediaType, content: content, result: result)
+            case .twitter:
                 shareToTwitter(text: content, result: result)
-            case .System:
+            case .system:
                 shareBySystem(content: content, result: result)
             }
         }
@@ -99,12 +111,7 @@ public class SwiftEcomsharePlugin: NSObject, FlutterPlugin {
         return UIApplication.shared.canOpenURL(url)
     }
     
-    private func shareToFacebook(args: [String: String], content: String, result: @escaping FlutterResult) {
-        guard
-            let mediaType = MediaType(rawValue: args["mediaType"] ?? "") else {
-            result(FlutterError(code: "arguments is invalid", message: "arguments is invalid", details: "Facebook share require mediaType"))
-            return
-        }
+    private func shareToFacebook(mediaType: MediaType, content: String, result: @escaping FlutterResult) {
         let sharingContent: SharingContent = {
             switch mediaType {
             case .text:
