@@ -5,6 +5,7 @@ buildscript {
     repositories {
         google()
         jcenter()
+        mavenCentral() 
     }
 
     dependencies {
@@ -31,8 +32,8 @@ android {
 
 dependencies {
     // Facebook share sdk
-    implementation 'com.facebook.android:facebook-share:4.42.0'
-    implementation 'com.facebook.android:facebook-applinks:4.42.0'
+    implementation 'com.facebook.android:facebook-share:8.1.0'
+    implementation 'com.facebook.android:facebook-applinks:8.1.0'
     // Twitter
     implementation implementation('com.twitter.sdk.android:twitter:3.3.0@aar') {
         transitive = true
