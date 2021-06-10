@@ -19,9 +19,13 @@ class Ecomshare {
     return channels;
   }
 
-  static Future<void> shareTo(
-      String mediaType, String channel, String content) async {
-    await _channel.invokeMethod('shareTo',
-        {"mediaType": mediaType, "channel": channel, "content": content});
+  static Future<void> shareTo(String mediaType, String channel, String content,
+      List<String> images) async {
+    await _channel.invokeMethod('shareTo', {
+      "mediaType": mediaType,
+      "channel": channel,
+      "content": content,
+      "images": images
+    });
   }
 }

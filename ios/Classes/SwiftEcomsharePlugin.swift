@@ -71,7 +71,8 @@ public class SwiftEcomsharePlugin: NSObject, FlutterPlugin {
             case .instagram:
                 shareToInstagram(imagePath: content, result: result)
             case .facebook:
-                shareToFacebook(mediaType: mediaType, content: content, result: result)
+                let images = (args["images"] as? [String]) ?? []
+                shareToFacebook(mediaType: mediaType, content: content, images: images, result: result)
             case .twitter:
                 shareToTwitter(text: content, result: result)
             case .system:
@@ -111,7 +112,7 @@ public class SwiftEcomsharePlugin: NSObject, FlutterPlugin {
         return UIApplication.shared.canOpenURL(url)
     }
     
-    private func shareToFacebook(mediaType: MediaType, content: String, result: @escaping FlutterResult) {
+    private func shareToFacebook(mediaType: MediaType, content: String, images: [String], result: @escaping FlutterResult) {
         let sharingContent: SharingContent? = {
             switch mediaType {
             case .text:
@@ -123,10 +124,12 @@ public class SwiftEcomsharePlugin: NSObject, FlutterPlugin {
                 content.contentURL = url
                 return content
             case .image:
-                let url = URL(fileURLWithPath: content)
-                let photo = SharePhoto(imageURL: url, userGenerated: true)
                 let content = SharePhotoContent()
-                content.photos = [photo]
+                content.photos = images.map({ filePath in
+                    let url = URL(fileURLWithPath: filePath)
+                    let photo = SharePhoto(imageURL: url, userGenerated: true)
+                    return photo
+                })
                 return content
             case .video:
                 let url = URL(fileURLWithPath: content)
