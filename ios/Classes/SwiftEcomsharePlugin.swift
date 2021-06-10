@@ -59,10 +59,10 @@ public class SwiftEcomsharePlugin: NSObject, FlutterPlugin {
             }
             result(Channel.allCases.filter { $0.isSupported(mediaType: mediaType) }.map { $0.rawValue })
         case .shareTo:
-            guard let args = call.arguments as? [String: String],
-                  let channel = Channel(rawValue: args["channel"] ?? ""),
-                  let mediaType = MediaType(rawValue: args["mediaType"] ?? ""),
-                  let content = args["content"] else {
+            guard let args = call.arguments as? [String: Any],
+                  let channel = Channel(rawValue: (args["channel"] as? String) ?? ""),
+                  let mediaType = MediaType(rawValue: (args["mediaType"] as? String) ?? ""),
+                  let content = args["content"] as? String else {
                 result(FlutterError(code: "arguments is invalid", message: "arguments is invalid", details: call.arguments))
                 return
             }
