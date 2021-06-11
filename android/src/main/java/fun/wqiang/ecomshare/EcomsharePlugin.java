@@ -53,7 +53,8 @@ public class EcomsharePlugin implements FlutterPlugin, MethodCallHandler, Activi
             String channel = call.argument("channel");
             String content = call.argument("content");
             if (CHANNEL_FACEBOOK.equals(channel)) {
-                ShareManager.getInstance(activity).shareMedia2FacebookByIntent(mediaType, content);
+                List<String> images = call.argument("images");
+                ShareManager.getInstance(activity).shareMedia2FacebookByIntent(mediaType, images, content);
             } else if (CHANNEL_TWITTER.equals(channel)) {
                 ShareManager.getInstance(activity).share2Twitter(mediaType, content);
             } else if (CHANNEL_INSTAGRAM.equals(channel)) {

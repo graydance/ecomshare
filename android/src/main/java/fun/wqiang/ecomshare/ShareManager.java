@@ -98,22 +98,20 @@ public class ShareManager {
      *
      * @param content 文本内容/媒体资源本地路径
      */
-    public void shareMedia2FacebookByIntent(String mediaType, String... content) {
+    public void shareMedia2FacebookByIntent(String mediaType, List<String> images, String... content) {
         Intent intent = new Intent(Intent.ACTION_SEND);
         if (EcomsharePlugin.MEDIA_TYPE_TEXT.equals(mediaType)) {
             intent.putExtra(Intent.EXTRA_TEXT, content);
         } else {
-            if (content != null && content.length == 1) {
-                intent.putExtra(Intent.EXTRA_STREAM, parse2Uri(content[0]));
-            } else {
-                ArrayList<Uri> uris = new ArrayList<>(content.length);
+            if (images != null) {
+                ArrayList<Uri> uris = new ArrayList<>(images.length);
                 intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-                for (int i = 0; i < content.length; i++) {
+                for (int i = 0; i < images.length; i++) {
                     if (i >= 6) {
                         // FB最大支持6个照片和视频元素内容
                         break;
                     }
-                    uris.add(parse2Uri(content[i]));
+                    uris.add(parse2Uri(images[i]));
                 }
                 intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
             }
