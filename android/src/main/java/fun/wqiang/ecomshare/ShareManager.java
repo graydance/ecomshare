@@ -30,6 +30,7 @@ import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Facebook Share SDK {@link "https://developers.facebook.com/docs/sharing/android/"}
@@ -104,14 +105,14 @@ public class ShareManager {
             intent.putExtra(Intent.EXTRA_TEXT, content);
         } else {
             if (images != null) {
-                ArrayList<Uri> uris = new ArrayList<>(images.length);
+                ArrayList<Uri> uris = new ArrayList<Uri>(images.size());
                 intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-                for (int i = 0; i < images.length; i++) {
+                for (int i = 0; i < images.size(); i++) {
                     if (i >= 6) {
                         // FB最大支持6个照片和视频元素内容
                         break;
                     }
-                    uris.add(parse2Uri(images[i]));
+                    uris.add(parse2Uri(images.get(i)));
                 }
                 intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
             }
